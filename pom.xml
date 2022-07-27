@@ -11,7 +11,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.vincentk</groupId>
 	<artifactId>joptimizer</artifactId>
-	<version>3.4.2</version>
+	<version>3.4.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>JOptimizer</name>
 	<description>JOptimizer is a java library for solving general convex optimization problems, like for example LP, QP, QCQP, SOCP, SDP, GP and many more.
@@ -70,17 +70,6 @@
 			<distribution>manual</distribution>
 		</license>
 	</licenses>
-
-	<distributionManagement>
-		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository>
-		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
-	</distributionManagement>
 
 	<profiles>
 		<profile>
@@ -148,6 +137,90 @@
 					</plugin>
 				</plugins>
 			</build>
+
+			<distributionManagement>
+				<snapshotRepository>
+					<id>ossrh</id>
+					<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+				</snapshotRepository>
+				<repository>
+					<id>ossrh</id>
+					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+				</repository>
+			</distributionManagement>
+		</profile>
+
+		<profile>
+			<id>release-github</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-deploy-plugin</artifactId>
+						<version>2.8.2</version>
+						<configuration>
+							<altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-artifact</altDeploymentRepository>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<version>2.2.1</version>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar-no-fork</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<!-- skip JavaDoc generation for now, breaks build due to syntax errors
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>2.9.1</version>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					-->
+					<plugin>
+						<groupId>com.github.github</groupId>
+						<artifactId>site-maven-plugin</artifactId>
+						<version>0.12</version>
+						<configuration>
+							<message>Maven artifacts for ${project.version}</message>
+							<noJekyll>true</noJekyll>
+							<outputDirectory>${project.build.directory}/mvn-artifact</outputDirectory>
+							<branch>refs/heads/mvn-repo</branch>
+							<repositoryName>joptimizer</repositoryName>
+							<repositoryOwner>jhauffa</repositoryOwner>
+							<server>github</server>
+						</configuration>
+						<executions>
+							<execution>
+								<goals>
+									<goal>site</goal>
+								</goals>
+								<phase>deploy</phase>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+
+			<distributionManagement>
+				<repository>
+					<id>internal.repo</id>
+					<name>Temporary Staging Repository</name>
+					<url>file://${project.build.directory}/mvn-artifact</url>
+				</repository>
+			</distributionManagement>
 		</profile>
 	</profiles>
 
